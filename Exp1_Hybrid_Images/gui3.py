@@ -74,14 +74,9 @@ class ImageAlignmentFrame(uiutils.BaseFrame):
     if template_file is not None:
 
       def load_template_and_compute():
-        self.load_corr(template_file)
-        self.process_compute()
+        self.load_corr(template_file, self.process_compute)
 
-      def load_template_local():
-        # self.wait_visibility()
-        self.after(0, load_template_and_compute)
-
-      threading.Thread(target=load_template_local).start()
+      self.after(0, load_template_and_compute)
 
   def load_first(self, img_name=None):
     img_name, img = self.ask_for_image(img_name)
@@ -95,23 +90,33 @@ class ImageAlignmentFrame(uiutils.BaseFrame):
       self.right_image_widget.draw_new_image(img)
       self.right_image_name = img_name
 
-  def load_corr(self, filename=None):
+  def load_corr(self, filename=None, on_loaded=None):
     if filename is None:
       filename = tkinter.filedialog.askopenfilename(
           parent=self,
           filetypes=[('JSON File', '*.json')])
     if filename is not None and os.path.isfile(filename):
       with open(filename, 'r') as infile:
-        conf = json.load(infile, 'utf-8')
+        conf = json.load(infile)
         self.load_first(conf['first_image'])
         self.load_second(conf['second_image'])
-        for c in conf['first_image_points']:
-          self.left_image_widget.push_click_image_coordinates(
-              int(c[0]), int(c[1]))
-        for c in conf['second_image_points']:
-          self.right_image_widget.push_click_image_coordinates(
-              int(c[0]), int(c[1]))
-        self.set_status('Loaded from template ' + filename)
+
+        def load_points():
+          if (self.left_image_widget.drawn_image_dim == (0, 0) or
+              self.right_image_widget.drawn_image_dim == (0, 0)):
+            self.after(50, load_points)
+            return
+          for c in conf['first_image_points']:
+            self.left_image_widget.push_click_image_coordinates(
+                int(c[0]), int(c[1]))
+          for c in conf['second_image_points']:
+            self.right_image_widget.push_click_image_coordinates(
+                int(c[0]), int(c[1]))
+          self.set_status('Loaded from template ' + filename)
+          if on_loaded is not None:
+            on_loaded()
+
+        load_points()
 
   def save_corr(self):
     filename = tkinter.filedialog.asksaveasfilename(
@@ -347,7 +352,7 @@ class HybridImageFrame(uiutils.BaseFrame):
                                                     filetypes=[('JSON file', '*.json')])
     if filename is not None:
       with open(filename, 'r') as infile:
-        conf = json.load(infile, 'utf-8')
+        conf = json.load(infile)
         self.left_sigma_slider.set(conf['left_sigma'])
         self.left_size_slider.set(conf['left_size'])
         self.left_high_low_indicator.set(conf['left_mode'].lower())

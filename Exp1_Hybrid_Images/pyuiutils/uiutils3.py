@@ -21,7 +21,7 @@ color_list = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0),
 
 def error(msg):
     '''Display a message box with the title 'Error' and the message as body.'''
-    tkMessageBox.showerror('Error', msg)
+    tkinter.messagebox.showerror('Error', msg)
 
 
 def convert_cv_to_tk(cv_image):
@@ -108,6 +108,7 @@ class ImageWidget(tk.Canvas):
         assert cv_image.shape[1] >= 1
         assert len(cv_image.shape) == 3 or cv_image.shape[2] == 3
         self.raw_image = cv_image  # preserve the image to be drawn
+        self.update_idletasks()
         self.redraw()
 
     def redraw(self, *args):
@@ -218,8 +219,8 @@ class ClickableImageWidget(ImageWidget):
         img_y_offset, img_x_offset = self.coordinates_of_top_left()
         original_height, original_width = self.raw_image.shape[:2]
         drawn_height, drawn_width = self.drawn_image_dim
-        res_y = y * drawn_width / float(original_width) + img_y_offset
-        res_x = x * drawn_height / float(original_height) + img_x_offset
+        res_y = y * drawn_height / float(original_height) + img_y_offset
+        res_x = x * drawn_width / float(original_width) + img_x_offset
         return (res_y, res_x)
 
     def draw_all_points(self):
