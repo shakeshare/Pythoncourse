@@ -1,0 +1,25 @@
+# Python cache and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments and local configuration
+.venv/
+venv/
+env/
+.env
+
+# Packaging artifacts
+build/
+dist/
+*.egg-info/
+
+# Notebook and editor artifacts
+.ipynb_checkpoints/
+.vscode/
+
+# Generated experiment output
+experiments/*/results/*
+!experiments/*/results/.gitkeep
